@@ -8,12 +8,15 @@ knit: (function(input_file, encoding) {
 ---
 
 
-```{r}
+```{r message = FALSE}
 library(tidyverse)
 library(jsonlite)
+library(tidycensus)
+```
 
+```{r}
 covid <- fromJSON("https://covidtracking.com/api/v1/states/daily.json")
-covid$date <- as.Date(as.character(covid$date), format="%Y%m%d")
+covid$date <- as.Date(as.character(covid$date), format = "%Y%m%d")
 # usable data really starts on 3/17
 covid <- covid %>%
   filter(date >= "2020-03-17") %>%
@@ -22,9 +25,9 @@ covid <- covid %>%
 # plot positive test rate by day for states of your choice
 covid %>%
   filter(state %in% c("TX","LA","NY","NJ","MI")) %>%
-  ggplot(aes(date,posrate,color=state)) + geom_line() #+ geom_point()
+  ggplot(aes(date, posrate, color = state)) + geom_line() #+ geom_point()
 
-# which states have the highest average positive test rate?
+# which states have the highest mean positive test rate?
 covid %>%
   group_by(state) %>%
   summarise(meanposrate = mean(posrate)) %>%
@@ -35,13 +38,12 @@ covid %>%
 # what do the trends of all states look like?
 ## start on apr 1 since the early data is very noisy
 covidf <- filter(covid, posrate < 1 & date >= "2020-04-01")
-ggplot(covidf, aes(date,posrate)) +
-  geom_line(aes(group=state), alpha=0.3) +
-  geom_line(data=filter(covidf,state=="TX"), color="red", alpha=0.6)
+ggplot(covidf, aes(date, posrate)) +
+  geom_line(aes(group = state), alpha = 0.3) +
+  geom_line(data=filter(covidf, state == "TX"), color = "red", alpha = 0.6)
 
 # use tidycensus to pull state pop and calculate death rate per capita (per million)
-library(tidycensus)
-pops <- get_acs(geography="state",variables=c(pop="B01001_001"),year=2018) %>%
+pops <- get_acs(geography = "state", variables = "B01001_001", year = 2018) %>%
   mutate(state = state.abb[match(NAME,state.name)])
 
 # could join this to the full data to plot death rate over time
@@ -49,9 +51,9 @@ pops <- get_acs(geography="state",variables=c(pop="B01001_001"),year=2018) %>%
 coviddeaths <-
   group_by(covid, state) %>%
   summarise(totaldeaths = max(death, na.rm = TRUE)) %>%
-  inner_join(.,pops) %>%
+  inner_join(., pops) %>%
   mutate(deathspermillion = totaldeaths * 1000000 / estimate) %>%
-  select(state,totaldeaths,NAME,estimate,deathspermillion) %>%
+  select(state, totaldeaths, NAME, estimate, deathspermillion) %>%
   arrange(desc(deathspermillion))
 head(coviddeaths)
 #View(coviddeaths)
@@ -71,7 +73,7 @@ coviddailydeaths <-
   inner_join(covid,pops) %>%
   mutate(dailydeathspermillion = deathIncrease * 1000000 / estimate) %>%
   filter(dailydeathspermillion >= 0) %>%
-  select(date,state,death,NAME,estimate,deathIncrease,dailydeathspermillion) %>%
+  select(date, state, death, NAME, estimate, deathIncrease, dailydeathspermillion) %>%
   arrange(desc(dailydeathspermillion))
 head(coviddailydeaths)
 #View(coviddailydeaths)
@@ -79,19 +81,19 @@ head(coviddailydeaths)
 # a couple different plots
 # the data as is are kind of noisy
 coviddailydeaths %>% 
-  ggplot(aes(date,dailydeathspermillion)) +
-  geom_line(aes(group=state), alpha=0.2) +
+  ggplot(aes(date, dailydeathspermillion)) +
+  geom_line(aes(group = state), alpha = 0.2) +
   geom_line(data=filter(coviddailydeaths, state %in% c("TX","NJ","NY","CA","MI","PA")),
-            aes(color=state))
+            aes(color = state))
 # smooth version
 coviddailydeaths %>% 
   filter(date >= "2020-04-01") %>%
-  ggplot(aes(date,dailydeathspermillion)) +
-  geom_smooth(aes(group=state), color="gray", se = FALSE) +
+  ggplot(aes(date, dailydeathspermillion)) +
+  geom_smooth(aes(group = state), color = "gray", se = FALSE) +
   geom_smooth(data=filter(coviddailydeaths,
             state %in% c("TX","NJ","NY","CT","CA","MI","PA","WA","IL","GA") &
               date >= "2020-04-01"),
-            aes(color=state), se=FALSE)
+            aes(color = state), se = FALSE)
 
 # curve is on the way down in many states, but it does appear some are still
 # going up. are they? if so identify those.
