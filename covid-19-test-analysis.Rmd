@@ -101,6 +101,10 @@ coviddailydeaths %>%
 # also, wapo says the texas new-infection rate is not going down. verify/
 # visualize that in the data and compare with other states.
 
+# plot a variable by day for states of your choice
+covid %>%
+  filter(date >= "2020-05-10" & state %in% c("TX","LA","NY","NJ","MI")) %>%
+  ggplot(aes(date,hospitalizedCurrently,color=state)) + geom_line() #+ geom_point()
 
 ```
 
