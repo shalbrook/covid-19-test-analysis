@@ -105,12 +105,12 @@ coviddailydeaths %>%
 
 # plot a variable by day for states of your choice
 covid %>%
-  filter(date >= "2020-05-15" & state %in% c("TX","FL","CA","AZ","GA")) %>%
+  filter(date >= "2020-05-15" & state %in% c("TX","SC","CA","AZ","GA")) %>%
   ggplot(aes(date,hospitalizedCurrently,color=state)) + geom_line() #+ geom_point()
 
 covid %>%
   inner_join(pops) %>%
-  filter(date >= "2020-05-15" & state %in% c("TX","FL","CA","AZ","GA")) %>%
+  filter(date >= "2020-05-15" & state %in% c("TX","SC","CA","AZ","GA")) %>%
   mutate(hospCurrPerMillion = hospitalizedCurrently * 1000000 / estimate) %>%
   ggplot(aes(date,hospCurrPerMillion,color=state)) + geom_line() + geom_smooth(se=FALSE) #+ geom_point()
 ```
