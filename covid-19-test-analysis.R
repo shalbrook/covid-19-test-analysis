@@ -12,7 +12,7 @@ covid <- covid %>%
 # plot positive test rate by day for states of your choice
 covid %>%
   filter(date >= "2020-05-15" &
-           state %in% c("TX","LA","NY","NJ","MI","CA","GA","FL","AZ")) %>%
+           state %in% c("TX","SC","MI","CA","GA","FL","AZ")) %>%
   ggplot(aes(date,posrate,color=state)) + geom_line() #+ geom_point()
 
 # which states have the highest average positive test rate?
@@ -25,7 +25,7 @@ covid %>%
 
 # what do the trends of all states look like?
 ## start on apr 1 since the early data is very noisy
-covidf <- filter(covid, posrate < 1 & date >= "2020-04-01")
+covidf <- filter(covid, posrate < 1 & date >= "2020-05-15")
 ggplot(covidf, aes(date,posrate)) +
   geom_line(aes(group=state), alpha=0.3) +
   geom_line(data=filter(covidf,state=="TX"), color="red", alpha=0.6)
@@ -92,11 +92,11 @@ coviddailydeaths %>%
 
 # plot a variable by day for states of your choice
 covid %>%
-  filter(date >= "2020-05-15" & state %in% c("TX","SC","CA","AZ","GA")) %>%
+  filter(date >= "2020-05-15" & state %in% c("TX","FL","SC","CA","AZ","GA")) %>%
   ggplot(aes(date,hospitalizedCurrently,color=state)) + geom_line() #+ geom_point()
 
 covid %>%
   inner_join(pops) %>%
-  filter(date >= "2020-05-15" & state %in% c("TX","SC","CA","AZ","GA")) %>%
+  filter(date >= "2020-05-15" & state %in% c("TX","FL","SC","CA","AZ","GA")) %>%
   mutate(hospCurrPerMillion = hospitalizedCurrently * 1000000 / estimate) %>%
   ggplot(aes(date,hospCurrPerMillion,color=state)) + geom_line() + geom_smooth(se=FALSE) #+ geom_point()
